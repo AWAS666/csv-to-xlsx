@@ -48,36 +48,39 @@ string to_utf8(string line)
 int main(int argc, char* argv[])
 {
 	ifstream input;
+	string line;
+	stringstream ss;
+
+	//Handle if any File is present
 	if (argv[1] == NULL)
 	{
-		cout << "No File" << endl;
+		cout << "No File at all" << endl;
 		return 0;
 	}
-	//INIT
-	string filename = argv[1];
-	input.open(filename, ios::in);
-	workbook wb;
-	worksheet ws = wb.active_sheet();
-	
-	string line;
-
-	stringstream ss;
-	int row = 1;
-	int column = 1;
-
-	while (getline(input, line, '\n'))
+	for (int i = 1; i < argc; i++)
 	{
-		column = 1;
-		ss << line;
-		while (getline(ss, line, ';'))
-		{			
-			//Write Data
-			ws.cell(column, row).value(to_utf8(line));
-			column++;
-		}
-		ss.clear();
-		row++;
-	}
-	wb.save(filename.substr(0, filename.find_last_of("."))+ ".xlsx");
+		//INIT Variables
+		string filename = argv[1];
+		input.open(filename, ios::in);
+		workbook wb;
+		worksheet ws = wb.active_sheet();
 
+		int row = 1;
+		int column = 1;
+
+		while (getline(input, line, '\n'))
+		{
+			column = 1;
+			ss << line;
+			while (getline(ss, line, ';'))
+			{
+				//Write Data
+				ws.cell(column, row).value(to_utf8(line));
+				column++;
+			}
+			ss.clear();
+			row++;
+		}
+		wb.save(filename.substr(0, filename.find_last_of(".")) + ".xlsx");
+	}
 }
