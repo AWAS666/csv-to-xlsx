@@ -8,7 +8,7 @@
 using namespace std;
 using namespace xlnt;
 
-//ersetze einzelnes Char in String mit String
+//replaces one char by two, used for ANSI to UTF-8
 void replace_char_by_str(string& input, char character, char char1,char char2)
 {
 	for (int i = 0; i < input.length(); i++)
@@ -31,8 +31,8 @@ void replace_char_by_str(string& input, char character, char char1,char char2)
 	}
 }
 
-//Umlautsäuberung für UTF-8
-string umlaut_utf8(string line)
+//Handle UTF-8 Cases, needs proper rework
+string to_utf8(string line)
 {
 	//https://www.i18nqa.com/debug/utf8-debug.html
 	replace_char_by_str(line, 0xE4, 0xC3,0x80);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	ifstream input;
 	if (argv[1] == NULL)
 	{
-		cout << "Fehler bei Parametereingabe" << endl;
+		cout << "No File" << endl;
 		return 0;
 	}
 	//INIT
@@ -62,21 +62,21 @@ int main(int argc, char* argv[])
 	string line;
 
 	stringstream ss;
-	int Reihe = 1;
-	int Spalte = 1;
+	int row = 1;
+	int column = 1;
 
 	while (getline(input, line, '\n'))
 	{
-		Spalte = 1;		
+		column = 1;
 		ss << line;
 		while (getline(ss, line, ';'))
 		{			
-			//Schreibe Zelle
-			ws.cell(Spalte, Reihe).value(umlaut_utf8(line));
-			Spalte++;			
+			//Write Data
+			ws.cell(column, row).value(to_utf8(line));
+			column++;
 		}
 		ss.clear();
-		Reihe++;
+		row++;
 	}
 	wb.save(filename.substr(0, filename.find_last_of("."))+ ".xlsx");
 
