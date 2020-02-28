@@ -8,7 +8,7 @@
 using namespace std;
 using namespace xlnt;
 
-//replaces one char by two, used for ANSI to UTF-8
+//replaces one char by two, used for ANSI to UTF-8, needs proper rework
 void replace_char_by_str(string& input, char character, char char1,char char2)
 {
 	for (int i = 0; i < input.length(); i++)
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	for (int i = 1; i < argc; i++)
 	{
 		//INIT Variables
-		string filename = argv[1];
+		string filename = argv[i];
 		input.open(filename, ios::in);
 		workbook wb;
 		worksheet ws = wb.active_sheet();
@@ -71,6 +71,8 @@ int main(int argc, char* argv[])
 		while (getline(input, line, '\n'))
 		{
 			column = 1;
+
+			//move string into stringstream so that getline will work
 			ss << line;
 			while (getline(ss, line, ';'))
 			{
@@ -78,9 +80,13 @@ int main(int argc, char* argv[])
 				ws.cell(column, row).value(to_utf8(line));
 				column++;
 			}
+
+			//clear stringstream so getline will start over
 			ss.clear();
 			row++;
 		}
+
+		//save xlsx
 		wb.save(filename.substr(0, filename.find_last_of(".")) + ".xlsx");
 	}
 }
