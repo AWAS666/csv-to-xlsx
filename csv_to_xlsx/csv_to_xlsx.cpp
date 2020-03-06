@@ -89,16 +89,31 @@ int main(int argc, char* argv[])
 				//Write Data, check Data type
 				if (regex_match(line, regex("\\d+,\\d+")) or regex_match(line, regex("\\d+\\.\\d+")))
 				{
-					line = ReplaceAll(line, ",", ".");
-					//matched double
-					double value = stod(line);
-					ws.cell(column, row).value(value);
+					try
+					{
+						line = ReplaceAll(line, ",", ".");
+						//matched double
+						double value = stod(line);
+						ws.cell(column, row).value(value);
+					}
+					catch (const std::out_of_range)
+					{
+						ws.cell(column, row).value(to_utf8(line));
+					}					
 				}
 				else if(regex_match(line, regex("\\d+")))
 				{
 					//matched integer
-					int value = stoi(line);
-					ws.cell(column, row).value(value);
+					//try integer and if fails use string
+					try
+					{
+						int value = stoi(line);
+						ws.cell(column, row).value(value);
+					}
+					catch (const std::out_of_range)
+					{
+						ws.cell(column, row).value(to_utf8(line));
+					}				
 				}
 				else
 				{
