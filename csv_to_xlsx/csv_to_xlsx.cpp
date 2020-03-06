@@ -4,9 +4,19 @@
 #include <string>
 #include <sstream>
 #include <xlnt/xlnt.hpp>
+#include <regex>
 
 using namespace std;
 using namespace xlnt;
+
+string ReplaceAll(std::string str, const std::string& from, const std::string& to) {
+	size_t start_pos = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+	}
+	return str;
+}
 
 //replaces one char by two, used for ANSI to UTF-8, needs proper rework
 void replace_char_by_str(string& input, char character, char char1,char char2)
@@ -76,8 +86,24 @@ int main(int argc, char* argv[])
 			ss << line;
 			while (getline(ss, line, ';'))
 			{
-				//Write Data
-				ws.cell(column, row).value(to_utf8(line));
+				//Write Data, check Data type
+				if (regex_match(line, regex("\\d+,\\d+")) or regex_match(line, regex("\\d+\\.\\d+")))
+				{
+					line = ReplaceAll(line, ",", ".");
+					//matched double
+					double value = stod(line);
+					ws.cell(column, row).value(value);
+				}
+				else if(regex_match(line, regex("\\d+")))
+				{
+					//matched integer
+					int value = stoi(line);
+					ws.cell(column, row).value(value);
+				}
+				else
+				{
+					ws.cell(column, row).value(to_utf8(line));
+				}				
 				column++;
 			}
 
@@ -88,5 +114,6 @@ int main(int argc, char* argv[])
 
 		//save xlsx
 		wb.save(filename.substr(0, filename.find_last_of(".")) + ".xlsx");
+		input.close();
 	}
 }
